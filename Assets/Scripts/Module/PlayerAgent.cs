@@ -30,7 +30,7 @@ namespace AGrail
                 FSM.ChangeState(calUIState(agentState), true, UIStateMsg.Init);
             }
         }
-        
+
         public RoleBase PlayerRole { get; private set; }
         public network.Command Cmd { get; set; }
 
@@ -47,7 +47,7 @@ namespace AGrail
                 while (SelectPlayers.Count > PlayerRole.MaxSelectPlayer(FSM.Current.StateNumber))
                     SelectPlayers.RemoveAt(0);
             }
-            MessageSystem<MessageType>.Notify(MessageType.AgentSelectPlayer);            
+            MessageSystem<MessageType>.Notify(MessageType.AgentSelectPlayer);
             FSM.HandleMessage(UIStateMsg.ClickPlayer);
         }
 
@@ -55,6 +55,13 @@ namespace AGrail
         {
             if (SelectPlayers.Contains(playerID))
                 SelectPlayers.Remove(playerID);
+            MessageSystem<MessageType>.Notify(MessageType.AgentSelectPlayer);
+            FSM.HandleMessage(UIStateMsg.ClickPlayer);
+        }
+
+        public void RemoveAllSelectPlayer()
+        {
+            SelectPlayers.Clear();
             MessageSystem<MessageType>.Notify(MessageType.AgentSelectPlayer);
             FSM.HandleMessage(UIStateMsg.ClickPlayer);
         }
@@ -74,7 +81,14 @@ namespace AGrail
         public void RemoveSelectCard(uint cardID)
         {
             if (SelectCards.Contains(cardID))
-                SelectCards.Remove(cardID);               
+                SelectCards.Remove(cardID);
+            MessageSystem<MessageType>.Notify(MessageType.AgentSelectCard);
+            FSM.HandleMessage(UIStateMsg.ClickCard);
+        }
+
+        public void RemoveAllSelectCard()
+        {
+            SelectCards.Clear();
             MessageSystem<MessageType>.Notify(MessageType.AgentSelectCard);
             FSM.HandleMessage(UIStateMsg.ClickCard);
         }
@@ -84,6 +98,14 @@ namespace AGrail
             SelectSkill = skillID;
             MessageSystem<MessageType>.Notify(MessageType.AgentSelectSkill);
             FSM.HandleMessage(UIStateMsg.ClickSkill);
+        }
+
+        public void AddSelectArgs(List<uint> args)
+        {
+            SelectArgs.Clear();
+            SelectArgs.AddRange(args);
+            MessageSystem<MessageType>.Notify(MessageType.AgentSelectArgs);
+            FSM.HandleMessage(UIStateMsg.ClickArgs);
         }
 
         private Type calUIState(int state)
@@ -114,9 +136,11 @@ namespace AGrail
                 return typeof(StateSkill);
             if (state.Check(PlayerAgentState.ActionNone))
                 return typeof(StateActionNone);
+            if (state.Check(PlayerAgentState.Polling))
+                return typeof(StatePolling);
             return typeof(StateIdle);
         }
-    }    
+    }
 
 }
 
